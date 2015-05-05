@@ -279,11 +279,6 @@ public class EPCTools implements Serializable {
         return hex.toUpperCase();
     }
 
-    public String createSSCC_198HexEPC(int filter, int partition, String compPrefix, String extensionCode, String serialRef) throws Exception {
-        //TODO
-        return "";
-    }
-
     public String createSGTIN_96HexEPC(String epc, String serialNumber) throws Exception {
         HashMap<TAG_DATA, String> map = parseHexString(epc);
         int filter = Integer.parseInt(map.get(TAG_DATA.FILTER));
