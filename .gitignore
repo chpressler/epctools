@@ -1,7 +1,2 @@
-*.class
-*.iml
-*.idea
-# Package Files #
-*.jar
-
+/EPCTools/.idea/
 /EPCTools/target/
