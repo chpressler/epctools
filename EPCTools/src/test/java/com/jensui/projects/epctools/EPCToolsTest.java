@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates and open the template in
  * the editor.
  */
-package com.jensui.epctools;
+package com.jensui.projects.epctools;
 
 import java.util.HashMap;
 import static org.junit.Assert.assertFalse;

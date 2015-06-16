@@ -1,4 +1,4 @@
-package com.jensui.epctools;
+package com.jensui.projects.epctools;
 
 import java.io.Serializable;
 import java.text.ParseException;
