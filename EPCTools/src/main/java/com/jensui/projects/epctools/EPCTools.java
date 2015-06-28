@@ -28,15 +28,15 @@ public class EPCTools implements Serializable {
          * in the Header
          */
         headerEncodings = new HashMap<>();
-        headerEncodings.put(206L, ENCODING.DOD_64);
-        headerEncodings.put(207L, ENCODING.DOD_96);
+//        headerEncodings.put(206L, ENCODING.DOD_64);
+//        headerEncodings.put(207L, ENCODING.DOD_96);
         headerEncodings.put(54L, ENCODING.SGTIN_198);
         headerEncodings.put(48L, ENCODING.SGTIN_96);
         headerEncodings.put(49L, ENCODING.SSCC);
-        headerEncodings.put(50L, ENCODING.GLN_96);
-        headerEncodings.put(51L, ENCODING.GRAI_96);
-        headerEncodings.put(52L, ENCODING.GIAI_96);
-        headerEncodings.put(53L, ENCODING.GID_96);
+//        headerEncodings.put(50L, ENCODING.GLN_96);
+//        headerEncodings.put(51L, ENCODING.GRAI_96);
+//        headerEncodings.put(52L, ENCODING.GIAI_96);
+//        headerEncodings.put(53L, ENCODING.GID_96);
 
         giaiPartitionTableCompPrefix = new HashMap<>();
         giaiPartitionTableCompPrefix.put(0L, 40L);
@@ -75,9 +75,13 @@ public class EPCTools implements Serializable {
         HEADER, FILTER, PARTITION, COMPANY_PREFIX, ITEM_REFERENCE, SERIAL_REFERENCE, SERIAL_NUMBER, UNALLOCATED, INDIVIDUAL_ASSET_REFERENCE, CAGE_CODE
     }
 
-    public enum ENCODING {
+    /*public enum ENCODING {
 
         DOD_64, DOD_96, SGTIN_96, SSCC, GLN_96, GRAI_96, GIAI_96, GID_96, SGTIN_198
+    }*/
+    public enum ENCODING {
+
+        SGTIN_96, SGTIN_198, SSCC
     }
 
     private String fillLeftWithZeros(String s, int digits) {
@@ -106,13 +110,13 @@ public class EPCTools implements Serializable {
         return Long.toHexString(binStringToLong(bin));
     }
 
-    public String getSerialNumber(HashMap<TAG_DATA, String> data) {
+    public String getSerialNumber(HashMap<TAG_DATA, String> data) throws Exception {
         if (data.get(TAG_DATA.HEADER).equals(ENCODING.SGTIN_96.toString()) || data.get(TAG_DATA.HEADER).equals(ENCODING.SGTIN_198.toString())) {
             return data.get(TAG_DATA.SERIAL_NUMBER);
         } else if (data.get(TAG_DATA.HEADER).equals(ENCODING.SSCC.toString())) {
             return data.get(TAG_DATA.SERIAL_REFERENCE);
         } else {
-            return "";
+            throw new Exception("unsupported Header: " + data.get(TAG_DATA.HEADER));
         }
     }
 
@@ -297,9 +301,9 @@ public class EPCTools implements Serializable {
         } else {
             throw new Exception(map.get(TAG_DATA.HEADER) + " not supported yet.");
         }
-    }
+    }xxx
 
-    public String createEPCPureIdentityURI_198(String epcHex) throws Exception {
+//    public String createEPCPureIdentityURI_198(String epcHex) throws Exception {
 //        HashMap<TAG_DATA, Long> map = parseHexString(epcHex);
 //        if (headerEncodings.get(map.get(TAG_DATA.HEADER)).equals(ENCODING_STANDARD.SGTIN_96)) {
 //            return "urn:epc:id:sgtin:"+map.get(TAG_DATA.COMPANY_PREFIX)+"."+map.get(TAG_DATA.ITEM_REFERENCE)+"."+map.get(TAG_DATA.SERIAL_NUMBER);
@@ -308,8 +312,8 @@ public class EPCTools implements Serializable {
 //        } else {
 //            throw new Exception(headerEncodings.get(map.get(TAG_DATA.HEADER))+" not supported yet.");
 //        }
-        return "Not yet Implemented";
-    }
+//        return "Not yet Implemented";
+//    }
 
     public String createEPCTagURI_96(String epcHex) throws Exception {
         HashMap<TAG_DATA, String> map = parseHexString(epcHex);
@@ -318,20 +322,19 @@ public class EPCTools implements Serializable {
         } else if (map.get(TAG_DATA.HEADER).equals(ENCODING.SSCC.toString())) {
             return "urn:epc:tag:sscc-96:" + map.get(TAG_DATA.FILTER) + "." + map.get(TAG_DATA.COMPANY_PREFIX) + "." + map.get(TAG_DATA.SERIAL_REFERENCE);
         } else {
-            throw new Exception(map.get(TAG_DATA.HEADER) + " not supported yet.");
+            throw new Exception("unsupported Header: " + map.get(TAG_DATA.HEADER));
         }
-    }
+    }xxx
 
-    public String createEPCTagURI_198(String epcHex) throws Exception {
-        return "Not yet Implemented";
-    }
+//    public String createEPCTagURI_198(String epcHex) throws Exception {
+//        return "Not yet Implemented";
+//    }
 
 //    public String create198EPCTagIdentityURI(String epcHex) throws Exception {
 //        HashMap<TAG_DATA, Long> map = parseHexString(epcHex);
 //        if (headerEncodings.get(map.get(TAG_DATA.HEADER)).equals(ENCODING_STANDARD.SGTIN_96)) {
 //            return "urn:epc:tag:sgtin-198:"+map.get(TAG_DATA.FILTER)+"."+map.get(TAG_DATA.COMPANY_PREFIX)+"."+map.get(TAG_DATA.ITEM_REFERENCE)+"."+"1"+fillLeftWithZeros(map.get(TAG_DATA.SERIAL_NUMBER), 19);
 //        } else if(headerEncodings.get(map.get(TAG_DATA.HEADER)).equals(ENCODING_STANDARD.SSCC_96)) {
-//            return "urn:epc:tag:sscc-198:"+map.get(TAG_DATA.FILTER)+"."+map.get(TAG_DATA.COMPANY_PREFIX)+"."+map.get(TAG_DATA.SERIAL_REFERENCE);
 //        } else {
 //            throw new Exception(headerEncodings.get(map.get(TAG_DATA.HEADER))+" not supported yet.");
 //        }
@@ -388,9 +391,14 @@ public class EPCTools implements Serializable {
 //			throw new Exception("invalid input hex string");
 //		}
         String binaryData = hexToBinaryString(hexData);
+        int offs = 0; long lHeader = binStringToLong(binaryData.substring(0, offs += 8));
+        ENCODING header = headerEncodings.get(lHeader);
+        if(header == null) {
+            throw new Exception("unsupported Header: " + lHeader);
+        }
+
         HashMap<TAG_DATA, String> data = new HashMap<>();
-        int offs = 0;
-        data.put(TAG_DATA.HEADER, headerEncodings.get(binStringToLong(binaryData.substring(0, offs += 8))).toString());
+        data.put(TAG_DATA.HEADER, header.toString());
 
         long filter = binStringToLong(binaryData.substring(offs, offs += 3));
         data.put(TAG_DATA.FILTER, Long.toString(filter));
@@ -415,7 +423,8 @@ public class EPCTools implements Serializable {
             data.put(TAG_DATA.SERIAL_REFERENCE, fillLeftWithZeros(Long.toString(serialreference), snLength));
             long unallocated = binStringToLong(binaryData.substring(offs));
             data.put(TAG_DATA.UNALLOCATED, Long.toString(unallocated));
-        } else if (data.get(TAG_DATA.HEADER).equals(ENCODING.DOD_64.toString())) {
+        }
+        /*else if (data.get(TAG_DATA.HEADER).equals(ENCODING.DOD_64.toString())) {
             //TODO
         } else if (data.get(TAG_DATA.HEADER).equals(ENCODING.DOD_96.toString())) {
             //TODO
@@ -427,12 +436,10 @@ public class EPCTools implements Serializable {
             //TODO
         } else if (data.get(TAG_DATA.HEADER).equals(ENCODING.GRAI_96.toString())) {
             //TODO
-        } else if (data.get(TAG_DATA.HEADER).equals(ENCODING.SGTIN_198.toString())) {
+        } */
+        else if (data.get(TAG_DATA.HEADER).equals(ENCODING.SGTIN_198.toString())) {
             data.put(TAG_DATA.SERIAL_NUMBER, fillLeftWithZeros(binStringTo7bitASCII(binaryData.substring(offs, binaryData.length())), 20));
-        } else {
-            throw new Exception("invalid input hex string");
         }
-
         return data;
     }
 

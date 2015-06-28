@@ -1,0 +1,10 @@
+*.class
+*.iml
+*.idea
+*.jar
+
+/.idea/
+target/
+/*/target/
+/*/*/target/
+/target/
