@@ -88,18 +88,19 @@ public class EPCToolsTest {
         
         Assert.assertEquals(sscc, epcTools.getSSCC(epcTools.parseHexString(hex)));
     }
-    
+
     @Test
     public void testEPCPureIdentityURI() throws Exception {
-//       String hex = epcTools.createSSCC_96HexEPC(3, "40320460", "1", "1010120710");
-//       Assert.assertEquals(epcTools.createEPCTagIdentityURI(hex), "urn:epc:tag:sscc-96:0.4032046.1010120710");
+        String hex = epcTools.createSSCCHexEPC(2, "4032046", "3", "0");
+        Assert.assertEquals(epcTools.createEPCPureIdentityURI(hex), "urn:epc:id:sscc:4032046.3000000000");
     }
-    
+
     @Test
-    public void testEPCTagIdentityURI() {
-        
+    public void testEPCTagIdentityURI() throws Exception {
+        String hex = epcTools.createSSCCHexEPC(2, "4032046", "3", "0");
+        Assert.assertEquals(epcTools.createEPCTagIdURI(hex), "urn:epc:tag:sscc-96:2.4032046.3000000000");
     }
-    
+
     @Test 
     public void testParseSGTIN96() throws Exception {
         HashMap<EPCTools.TAG_DATA, String> map = epcTools.parseHexString("30740242204031C0000003E7");

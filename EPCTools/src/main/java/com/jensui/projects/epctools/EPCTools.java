@@ -85,17 +85,21 @@ public class EPCTools implements Serializable {
     }
 
     private String fillLeftWithZeros(String s, int digits) {
-        while (s.length() < digits) {
-            s = "0" + s;
+        StringBuilder sb = new StringBuilder();
+        sb.append(s);
+        while (sb.length() < digits) {
+            sb.insert(0, "0");
         }
-        return s;
+        return sb.toString();
     }
 
     private String fillRightWithZeros(String s, int digits) {
-        while (s.length() < digits) {
-            s += "0";
+        StringBuilder sb = new StringBuilder();
+        sb.append(s);
+        while (sb.length() < digits) {
+            sb.append("0");
         }
-        return s;
+        return sb.toString();
     }
 
     private String hexToBinaryString(String hex) {
@@ -283,6 +287,28 @@ public class EPCTools implements Serializable {
         return hex.toUpperCase();
     }
 
+    public String createEPCPureIdentityURI(String epcHex) throws Exception {
+        HashMap<TAG_DATA, String> map = parseHexString(epcHex);
+        if (map.get(TAG_DATA.HEADER).equals(ENCODING.SGTIN_96.toString())) {
+            return "urn:epc:id:sgtin:" + getCompanyPrefix(map) + "." + getItemReference(map) + "." + map.get(TAG_DATA.SERIAL_NUMBER);
+        } else if (map.get(TAG_DATA.HEADER).equals(ENCODING.SSCC.toString())) {
+            return "urn:epc:id:sscc:" + getCompanyPrefix(map) + "." + map.get(TAG_DATA.SERIAL_REFERENCE);
+        } else {
+            throw new Exception("unsupported Header: " + map.get(TAG_DATA.HEADER));
+        }
+    }
+
+    public String createEPCTagIdURI(String epcHex) throws Exception {
+        HashMap<TAG_DATA, String> map = parseHexString(epcHex);
+        if (map.get(TAG_DATA.HEADER).equals(ENCODING.SGTIN_96.toString())) {
+            return "urn:epc:tag:sgtin-96:" + map.get(TAG_DATA.FILTER) + "." + map.get(TAG_DATA.COMPANY_PREFIX) + "." + map.get(TAG_DATA.ITEM_REFERENCE) + "." + map.get(TAG_DATA.SERIAL_NUMBER);
+        } else if (map.get(TAG_DATA.HEADER).equals(ENCODING.SSCC.toString())) {
+            return "urn:epc:tag:sscc-96:" + map.get(TAG_DATA.FILTER) + "." + map.get(TAG_DATA.COMPANY_PREFIX) + "." + map.get(TAG_DATA.SERIAL_REFERENCE);
+        } else {
+            throw new Exception("unsupported Header: " + map.get(TAG_DATA.HEADER));
+        }
+    }
+
     public String createSGTIN_96HexEPC(String epc, String serialNumber) throws Exception {
         HashMap<TAG_DATA, String> map = parseHexString(epc);
         int filter = Integer.parseInt(map.get(TAG_DATA.FILTER));
@@ -292,72 +318,17 @@ public class EPCTools implements Serializable {
         return createSGTIN_96HexEPC(filter, partition, companyPrefix, itemReference, serialNumber);
     }
 
-    public String createEPCPureIdentityURI_96(String epcHex) throws Exception {
-        HashMap<TAG_DATA, String> map = parseHexString(epcHex);
-        if (map.get(TAG_DATA.HEADER).equals(ENCODING.SGTIN_96.toString())) {
-            return "urn:epc:id:sgtin:" + getCompanyPrefix(map) + "." + getItemReference(map) + "." + map.get(TAG_DATA.SERIAL_NUMBER);
-        } else if (map.get(TAG_DATA.HEADER).equals(ENCODING.SSCC.toString())) {
-            return "urn:epc:id:sscc:" + getCompanyPrefix(map) + "." + map.get(TAG_DATA.SERIAL_REFERENCE);
-        } else {
-            throw new Exception(map.get(TAG_DATA.HEADER) + " not supported yet.");
-        }
-    }xxx
-
-//    public String createEPCPureIdentityURI_198(String epcHex) throws Exception {
-//        HashMap<TAG_DATA, Long> map = parseHexString(epcHex);
-//        if (headerEncodings.get(map.get(TAG_DATA.HEADER)).equals(ENCODING_STANDARD.SGTIN_96)) {
-//            return "urn:epc:id:sgtin:"+map.get(TAG_DATA.COMPANY_PREFIX)+"."+map.get(TAG_DATA.ITEM_REFERENCE)+"."+map.get(TAG_DATA.SERIAL_NUMBER);
-//        } else if(headerEncodings.get(map.get(TAG_DATA.HEADER)).equals(ENCODING_STANDARD.SSCC_96)) {
-//            return "urn:epc:id:sgtin:"+map.get(TAG_DATA.COMPANY_PREFIX)+"."+map.get(TAG_DATA.SERIAL_REFERENCE);
-//        } else {
-//            throw new Exception(headerEncodings.get(map.get(TAG_DATA.HEADER))+" not supported yet.");
-//        }
-//        return "Not yet Implemented";
-//    }
-
-    public String createEPCTagURI_96(String epcHex) throws Exception {
-        HashMap<TAG_DATA, String> map = parseHexString(epcHex);
-        if (map.get(TAG_DATA.HEADER).equals(ENCODING.SGTIN_96.toString())) {
-            return "urn:epc:tag:sgtin-96:" + map.get(TAG_DATA.FILTER) + "." + map.get(TAG_DATA.COMPANY_PREFIX) + "." + map.get(TAG_DATA.ITEM_REFERENCE) + "." + map.get(TAG_DATA.SERIAL_NUMBER);
-        } else if (map.get(TAG_DATA.HEADER).equals(ENCODING.SSCC.toString())) {
-            return "urn:epc:tag:sscc-96:" + map.get(TAG_DATA.FILTER) + "." + map.get(TAG_DATA.COMPANY_PREFIX) + "." + map.get(TAG_DATA.SERIAL_REFERENCE);
-        } else {
-            throw new Exception("unsupported Header: " + map.get(TAG_DATA.HEADER));
-        }
-    }xxx
-
-//    public String createEPCTagURI_198(String epcHex) throws Exception {
-//        return "Not yet Implemented";
-//    }
-
-//    public String create198EPCTagIdentityURI(String epcHex) throws Exception {
-//        HashMap<TAG_DATA, Long> map = parseHexString(epcHex);
-//        if (headerEncodings.get(map.get(TAG_DATA.HEADER)).equals(ENCODING_STANDARD.SGTIN_96)) {
-//            return "urn:epc:tag:sgtin-198:"+map.get(TAG_DATA.FILTER)+"."+map.get(TAG_DATA.COMPANY_PREFIX)+"."+map.get(TAG_DATA.ITEM_REFERENCE)+"."+"1"+fillLeftWithZeros(map.get(TAG_DATA.SERIAL_NUMBER), 19);
-//        } else if(headerEncodings.get(map.get(TAG_DATA.HEADER)).equals(ENCODING_STANDARD.SSCC_96)) {
-//        } else {
-//            throw new Exception(headerEncodings.get(map.get(TAG_DATA.HEADER))+" not supported yet.");
-//        }
-//    }
-    public String createSGTIN_96HexEPC(int rank, String gtin, String sn) throws Exception {
-        return createSGTIN_96HexEPC(rank, 6, gtin.substring(1, 7), gtin.substring(0, 1) + gtin.substring(7, 13), sn);
+    public String createSGTIN_96HexEPC(int packLevel, String gtin, String sn) throws Exception {
+        return createSGTIN_96HexEPC(packLevel, 6, gtin.substring(1, 7), gtin.substring(0, 1) + gtin.substring(7, 13), sn);
     }
 
-    public String createSGTIN_198HexEPC(int rank, String gtin, String sn) throws Exception {
-        return createSGTIN_198HexEPC(rank, 6, gtin.substring(1, 7), gtin.substring(0, 1) + gtin.substring(7, 13), sn);
+    public String createSGTIN_198HexEPC(int packLevel, String gtin, String sn) throws Exception {
+        return createSGTIN_198HexEPC(packLevel, 6, gtin.substring(1, 7), gtin.substring(0, 1) + gtin.substring(7, 13), sn);
     }
 
-    public String createSSCCHexEPC(int rank, String companyPrefix, String extensionCode, String serialRef) throws Exception {
+    public String createSSCCHexEPC(int packLevel, String companyPrefix, String extensionCode, String serialRef) throws Exception {
         int partition = (companyPrefix.length() < 6) ? 6 : (12 - companyPrefix.length());
-//        if (serialRef.length() > giaiPartitionTableSerialReference.get(partition)) {
-//           throw new Exception("Can not create SSCC-96. serialRef too long");
-//        }
-//        if (serialRef.length() == giaiPartitionTableSerialReference.get(partition)) {
-//            if(serialRef.substring(0, 1).equals(extensionCode)) {
-//                serialRef = serialRef.substring(1);
-//            }
-//        }
-        return createSSCCHexEPC(rank, partition, companyPrefix, extensionCode, serialRef);
+        return createSSCCHexEPC(packLevel, partition, companyPrefix, extensionCode, serialRef);
     }
 
     public ENCODING getEncoding(String epcHex) {
