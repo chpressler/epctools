@@ -60,10 +60,13 @@ public class EPCToolsTest {
         String hex = epcTools.createSGTIN_96HexEPC(0, 6, "0000000", "00000", "1");
         Assert.assertEquals("301800000000000000000001", hex);
         
-        hex = epcTools.createSGTIN_96HexEPC(2, 6, "30069", "422030", "123456789");
+        hex = epcTools.createSGTIN_96HexEPC(2, 6, "030069", "0422030", "123456789");
         Assert.assertEquals("30581D5D419C2380075BCD15", hex);
+
+        String epcPureIdUri = epcTools.createEPCPureIdentityURI(hex);
+        Assert.assertEquals("urn:epc:id:sgtin:030069.0422030.123456789", epcPureIdUri);
         
-        hex = epcTools.createSGTIN_96HexEPC(1, 6, "30069", "422030", "1");
+        hex = epcTools.createSGTIN_96HexEPC(1, 6, "30069", "422030", "1"); //partition value 6 -> 6 digits compPrefix, a given 30069 is converted into 030069
         Assert.assertEquals("30381D5D419C238000000001", hex);
         
         hex = epcTools.createSGTIN_96HexEPC(3, 5, "0037000", "65735", "999");
@@ -74,9 +77,15 @@ public class EPCToolsTest {
     public void testCreateSGTIN198HEX() throws Exception {
         String hex = epcTools.createSGTIN_198HexEPC(1, 6, "030430", "0058045", "400400010010");
         Assert.assertEquals("36381DB78038AF5A3060D183060C583062C000000000000000", hex);
+
+        String epcPureIdUri = epcTools.createEPCPureIdentityURI(hex);
+        Assert.assertEquals("urn:epc:id:sgtin:030430.0058045.400400010010", epcPureIdUri);
         
         hex = epcTools.createSGTIN_198HexEPC(1, 6, "030430", "0058045", "12345abcABC012345678");
         Assert.assertEquals("36381DB78038AF58B266D1AE1C58E0C286C18B266D1AB66EE0", hex);
+
+        epcPureIdUri = epcTools.createEPCPureIdentityURI(hex);
+        Assert.assertEquals("urn:epc:id:sgtin:030430.0058045.12345abcABC012345678", epcPureIdUri);
     }
     
     @Test

@@ -292,28 +292,34 @@ public class EPCTools implements Serializable {
         return createSGTIN_96HexEPC(filter, partition, companyPrefix, itemReference, serialNumber);
     }
 
-    public String createEPCPureIdentityURI_96(String epcHex) throws Exception {
+    public String createEPCPureIdentityURI(String epcHex) throws Exception {
         HashMap<TAG_DATA, String> map = parseHexString(epcHex);
-        if (map.get(TAG_DATA.HEADER).equals(ENCODING.SGTIN_96.toString())) {
-            return "urn:epc:id:sgtin:" + getCompanyPrefix(map) + "." + getItemReference(map) + "." + map.get(TAG_DATA.SERIAL_NUMBER);
+        if (map.get(TAG_DATA.HEADER).equals(ENCODING.SGTIN_96.toString()) || map.get(TAG_DATA.HEADER).equals(ENCODING.SGTIN_198.toString())) {
+            String sn = map.get(TAG_DATA.SERIAL_NUMBER);
+            if (sn.matches(".*[a-zA-Z]+.*")) {
+                sn = sn.replaceFirst ("^0*", "");
+            }
+            else {
+                try {
+                    sn = Long.toString(Long.parseLong(sn));
+                } catch (Exception e) {}
+            }
+            return "urn:epc:id:sgtin:" + map.get(TAG_DATA.COMPANY_PREFIX) + "." + map.get(TAG_DATA.ITEM_REFERENCE) + "." + sn;
         } else if (map.get(TAG_DATA.HEADER).equals(ENCODING.SSCC.toString())) {
-            return "urn:epc:id:sscc:" + getCompanyPrefix(map) + "." + map.get(TAG_DATA.SERIAL_REFERENCE);
+            String sn = map.get(TAG_DATA.SERIAL_REFERENCE);
+            if (sn.matches(".*[a-zA-Z]+.*")) {
+                sn = sn.replaceFirst ("^0*", "");
+            }
+            else {
+                try {
+                    sn = Long.toString(Long.parseLong(sn));
+                } catch (Exception e) {}
+            }
+            return "urn:epc:id:sscc:" + map.get(TAG_DATA.COMPANY_PREFIX) + "." + sn;
         } else {
             throw new Exception(map.get(TAG_DATA.HEADER) + " not supported yet.");
         }
-    }xxx
-
-//    public String createEPCPureIdentityURI_198(String epcHex) throws Exception {
-//        HashMap<TAG_DATA, Long> map = parseHexString(epcHex);
-//        if (headerEncodings.get(map.get(TAG_DATA.HEADER)).equals(ENCODING_STANDARD.SGTIN_96)) {
-//            return "urn:epc:id:sgtin:"+map.get(TAG_DATA.COMPANY_PREFIX)+"."+map.get(TAG_DATA.ITEM_REFERENCE)+"."+map.get(TAG_DATA.SERIAL_NUMBER);
-//        } else if(headerEncodings.get(map.get(TAG_DATA.HEADER)).equals(ENCODING_STANDARD.SSCC_96)) {
-//            return "urn:epc:id:sgtin:"+map.get(TAG_DATA.COMPANY_PREFIX)+"."+map.get(TAG_DATA.SERIAL_REFERENCE);
-//        } else {
-//            throw new Exception(headerEncodings.get(map.get(TAG_DATA.HEADER))+" not supported yet.");
-//        }
-//        return "Not yet Implemented";
-//    }
+    }
 
     public String createEPCTagURI_96(String epcHex) throws Exception {
         HashMap<TAG_DATA, String> map = parseHexString(epcHex);
@@ -324,21 +330,8 @@ public class EPCTools implements Serializable {
         } else {
             throw new Exception("unsupported Header: " + map.get(TAG_DATA.HEADER));
         }
-    }xxx
+    }
 
-//    public String createEPCTagURI_198(String epcHex) throws Exception {
-//        return "Not yet Implemented";
-//    }
-
-//    public String create198EPCTagIdentityURI(String epcHex) throws Exception {
-//        HashMap<TAG_DATA, Long> map = parseHexString(epcHex);
-//        if (headerEncodings.get(map.get(TAG_DATA.HEADER)).equals(ENCODING_STANDARD.SGTIN_96)) {
-//            return "urn:epc:tag:sgtin-198:"+map.get(TAG_DATA.FILTER)+"."+map.get(TAG_DATA.COMPANY_PREFIX)+"."+map.get(TAG_DATA.ITEM_REFERENCE)+"."+"1"+fillLeftWithZeros(map.get(TAG_DATA.SERIAL_NUMBER), 19);
-//        } else if(headerEncodings.get(map.get(TAG_DATA.HEADER)).equals(ENCODING_STANDARD.SSCC_96)) {
-//        } else {
-//            throw new Exception(headerEncodings.get(map.get(TAG_DATA.HEADER))+" not supported yet.");
-//        }
-//    }
     public String createSGTIN_96HexEPC(int rank, String gtin, String sn) throws Exception {
         return createSGTIN_96HexEPC(rank, 6, gtin.substring(1, 7), gtin.substring(0, 1) + gtin.substring(7, 13), sn);
     }
