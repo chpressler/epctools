@@ -4,6 +4,7 @@
 *.jar
 
 /.idea/
+.idea/
 target/
 /*/target/
 /*/*/target/

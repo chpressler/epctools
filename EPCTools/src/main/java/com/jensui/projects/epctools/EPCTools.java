@@ -85,17 +85,21 @@ public class EPCTools implements Serializable {
     }
 
     private String fillLeftWithZeros(String s, int digits) {
-        while (s.length() < digits) {
-            s = "0" + s;
+        StringBuilder sb = new StringBuilder();
+        sb.append(s);
+        while (sb.length() < digits) {
+            sb.insert(0, "0");
         }
-        return s;
+        return sb.toString();
     }
 
     private String fillRightWithZeros(String s, int digits) {
-        while (s.length() < digits) {
-            s += "0";
+        StringBuilder sb = new StringBuilder();
+        sb.append(s);
+        while (sb.length() < digits) {
+            sb.append("0");
         }
-        return s;
+        return sb.toString();
     }
 
     private String hexToBinaryString(String hex) {
@@ -194,7 +198,7 @@ public class EPCTools implements Serializable {
         }
         String b_header = fillLeftWithZeros(Integer.toBinaryString(48), 8); //8 bit header
         String b_filter = fillLeftWithZeros(Integer.toBinaryString(filter), 3); //3 bit filter
-        String b_partition = fillLeftWithZeros(Integer.toBinaryString(partition), 3); //3 bit partition 
+        String b_partition = fillLeftWithZeros(Integer.toBinaryString(partition), 3); //3 bit partition
         long compPrefixLength = giaiPartitionTableCompPrefix.get((long) partition);
         if (Integer.toBinaryString(Integer.parseInt(compPrefix)).length() > compPrefixLength) {
             throw new Exception("comp prefix length for partition: " + partition + " is too big. Max Length: " + compPrefixLength + ".");
@@ -224,7 +228,7 @@ public class EPCTools implements Serializable {
         }
         String b_header = fillLeftWithZeros(Integer.toBinaryString(54), 8); //8 bit header
         String b_filter = fillLeftWithZeros(Integer.toBinaryString(filter), 3); //3 bit filter
-        String b_partition = fillLeftWithZeros(Integer.toBinaryString(partition), 3); //3 bit partition 
+        String b_partition = fillLeftWithZeros(Integer.toBinaryString(partition), 3); //3 bit partition
         long compPrefixLength = giaiPartitionTableCompPrefix.get((long) partition);
         if (Integer.toBinaryString(Integer.parseInt(compPrefix)).length() > compPrefixLength) {
             throw new Exception("comp prefix length for partition: " + partition + " is too big. Max Length: " + compPrefixLength + ".");
@@ -262,7 +266,7 @@ public class EPCTools implements Serializable {
         }
         String b_header = fillLeftWithZeros(Integer.toBinaryString(49), 8); //8 bit header
         String b_filter = fillLeftWithZeros(Integer.toBinaryString(filter), 3); //3 bit filter
-        String b_partition = fillLeftWithZeros(Integer.toBinaryString(partition), 3); //3 bit partition 
+        String b_partition = fillLeftWithZeros(Integer.toBinaryString(partition), 3); //3 bit partition
         long compPrefixLength = giaiPartitionTableCompPrefix.get((long) partition);
 
         String b_compPrefix = fillLeftWithZeros(Integer.toBinaryString(Integer.parseInt(compPrefix)), (int) compPrefixLength);
@@ -281,15 +285,6 @@ public class EPCTools implements Serializable {
             hex += binaryStringToHex(bin.substring(offs, offs += 4));
         }
         return hex.toUpperCase();
-    }
-
-    public String createSGTIN_96HexEPC(String epc, String serialNumber) throws Exception {
-        HashMap<TAG_DATA, String> map = parseHexString(epc);
-        int filter = Integer.parseInt(map.get(TAG_DATA.FILTER));
-        int partition = Integer.parseInt(map.get(TAG_DATA.PARTITION));
-        String companyPrefix = getCompanyPrefix(map);
-        String itemReference = getItemReference(map);
-        return createSGTIN_96HexEPC(filter, partition, companyPrefix, itemReference, serialNumber);
     }
 
     public String createEPCPureIdentityURI(String epcHex) throws Exception {
@@ -317,11 +312,11 @@ public class EPCTools implements Serializable {
             }
             return "urn:epc:id:sscc:" + map.get(TAG_DATA.COMPANY_PREFIX) + "." + sn;
         } else {
-            throw new Exception(map.get(TAG_DATA.HEADER) + " not supported yet.");
+            throw new Exception("unsupported Header: " + map.get(TAG_DATA.HEADER));
         }
     }
 
-    public String createEPCTagURI_96(String epcHex) throws Exception {
+    public String createEPCTagIdURI(String epcHex) throws Exception {
         HashMap<TAG_DATA, String> map = parseHexString(epcHex);
         if (map.get(TAG_DATA.HEADER).equals(ENCODING.SGTIN_96.toString())) {
             return "urn:epc:tag:sgtin-96:" + map.get(TAG_DATA.FILTER) + "." + map.get(TAG_DATA.COMPANY_PREFIX) + "." + map.get(TAG_DATA.ITEM_REFERENCE) + "." + map.get(TAG_DATA.SERIAL_NUMBER);
@@ -332,25 +327,26 @@ public class EPCTools implements Serializable {
         }
     }
 
-    public String createSGTIN_96HexEPC(int rank, String gtin, String sn) throws Exception {
-        return createSGTIN_96HexEPC(rank, 6, gtin.substring(1, 7), gtin.substring(0, 1) + gtin.substring(7, 13), sn);
+    public String createSGTIN_96HexEPC(String epc, String serialNumber) throws Exception {
+        HashMap<TAG_DATA, String> map = parseHexString(epc);
+        int filter = Integer.parseInt(map.get(TAG_DATA.FILTER));
+        int partition = Integer.parseInt(map.get(TAG_DATA.PARTITION));
+        String companyPrefix = getCompanyPrefix(map);
+        String itemReference = getItemReference(map);
+        return createSGTIN_96HexEPC(filter, partition, companyPrefix, itemReference, serialNumber);
     }
 
-    public String createSGTIN_198HexEPC(int rank, String gtin, String sn) throws Exception {
-        return createSGTIN_198HexEPC(rank, 6, gtin.substring(1, 7), gtin.substring(0, 1) + gtin.substring(7, 13), sn);
+    public String createSGTIN_96HexEPC(int packLevel, String gtin, String sn) throws Exception {
+        return createSGTIN_96HexEPC(packLevel, 6, gtin.substring(1, 7), gtin.substring(0, 1) + gtin.substring(7, 13), sn);
     }
 
-    public String createSSCCHexEPC(int rank, String companyPrefix, String extensionCode, String serialRef) throws Exception {
+    public String createSGTIN_198HexEPC(int packLevel, String gtin, String sn) throws Exception {
+        return createSGTIN_198HexEPC(packLevel, 6, gtin.substring(1, 7), gtin.substring(0, 1) + gtin.substring(7, 13), sn);
+    }
+
+    public String createSSCCHexEPC(int packLevel, String companyPrefix, String extensionCode, String serialRef) throws Exception {
         int partition = (companyPrefix.length() < 6) ? 6 : (12 - companyPrefix.length());
-//        if (serialRef.length() > giaiPartitionTableSerialReference.get(partition)) {
-//           throw new Exception("Can not create SSCC-96. serialRef too long");
-//        }
-//        if (serialRef.length() == giaiPartitionTableSerialReference.get(partition)) {
-//            if(serialRef.substring(0, 1).equals(extensionCode)) {
-//                serialRef = serialRef.substring(1);
-//            }
-//        }
-        return createSSCCHexEPC(rank, partition, companyPrefix, extensionCode, serialRef);
+        return createSSCCHexEPC(packLevel, partition, companyPrefix, extensionCode, serialRef);
     }
 
     public ENCODING getEncoding(String epcHex) {
