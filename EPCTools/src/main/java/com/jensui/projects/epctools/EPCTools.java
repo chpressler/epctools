@@ -319,9 +319,38 @@ public class EPCTools implements Serializable {
     public String createEPCTagIdURI(String epcHex) throws Exception {
         HashMap<TAG_DATA, String> map = parseHexString(epcHex);
         if (map.get(TAG_DATA.HEADER).equals(ENCODING.SGTIN_96.toString())) {
-            return "urn:epc:tag:sgtin-96:" + map.get(TAG_DATA.FILTER) + "." + map.get(TAG_DATA.COMPANY_PREFIX) + "." + map.get(TAG_DATA.ITEM_REFERENCE) + "." + map.get(TAG_DATA.SERIAL_NUMBER);
+            String sn = map.get(TAG_DATA.SERIAL_NUMBER);
+            if (sn.matches(".*[a-zA-Z]+.*")) {
+                sn = sn.replaceFirst ("^0*", "");
+            }
+            else {
+                try {
+                    sn = Long.toString(Long.parseLong(sn));
+                } catch (Exception e) {}
+            }
+            return "urn:epc:tag:sgtin-96:" + map.get(TAG_DATA.FILTER) + "." + map.get(TAG_DATA.COMPANY_PREFIX) + "." + map.get(TAG_DATA.ITEM_REFERENCE) + "." +sn;
+        } if (map.get(TAG_DATA.HEADER).equals(ENCODING.SGTIN_198.toString())) {
+            String sn = map.get(TAG_DATA.SERIAL_NUMBER);
+            if (sn.matches(".*[a-zA-Z]+.*")) {
+                sn = sn.replaceFirst ("^0*", "");
+            }
+            else {
+                try {
+                    sn = Long.toString(Long.parseLong(sn));
+                } catch (Exception e) {}
+            }
+            return "urn:epc:tag:sgtin-198:" + map.get(TAG_DATA.FILTER) + "." + map.get(TAG_DATA.COMPANY_PREFIX) + "." + map.get(TAG_DATA.ITEM_REFERENCE) + "." +sn;
         } else if (map.get(TAG_DATA.HEADER).equals(ENCODING.SSCC.toString())) {
-            return "urn:epc:tag:sscc-96:" + map.get(TAG_DATA.FILTER) + "." + map.get(TAG_DATA.COMPANY_PREFIX) + "." + map.get(TAG_DATA.SERIAL_REFERENCE);
+            String sn = map.get(TAG_DATA.SERIAL_REFERENCE);
+            if (sn.matches(".*[a-zA-Z]+.*")) {
+                sn = sn.replaceFirst ("^0*", "");
+            }
+            else {
+                try {
+                    sn = Long.toString(Long.parseLong(sn));
+                } catch (Exception e) {}
+            }
+            return "urn:epc:tag:sscc-96:" + map.get(TAG_DATA.FILTER) + "." + map.get(TAG_DATA.COMPANY_PREFIX) + "." + sn;
         } else {
             throw new Exception("unsupported Header: " + map.get(TAG_DATA.HEADER));
         }
