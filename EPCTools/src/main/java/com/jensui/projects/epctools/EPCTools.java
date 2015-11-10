@@ -211,12 +211,12 @@ public class EPCTools implements Serializable {
         String b_itemRef = fillLeftWithZeros(Integer.toBinaryString(Integer.parseInt(itemRef)), (int) itemRefLength);
         String b_serialNumber = fillLeftWithZeros(Long.toBinaryString(Long.parseLong(serialNumber)), 38); //38 bit sn
         String bin = b_header + b_filter + b_partition + b_compPrefix + b_itemRef + b_serialNumber;
-        String hex = "";
+        StringBuilder hex = new StringBuilder();
         int offs = 0;
         while (offs < bin.length()) {
-            hex += binaryStringToHex(bin.substring(offs, offs += 4));
+            hex.append(binaryStringToHex(bin.substring(offs, offs += 4)));
         }
-        return hex.toUpperCase();
+        return hex.toString().toUpperCase();
     }
 
     public String createSGTIN_198HexEPC(int filter, int partition, String compPrefix, String itemRef, String serialNumber) throws Exception {
@@ -242,22 +242,26 @@ public class EPCTools implements Serializable {
         String b_serialNumber = fillRightWithZeros(toBinaryString(serialNumber), 140);//140 bit sn - alphanumeric (140 bit / 20 digits = 7bit - ASCI 128 per digit)
 
         String bin = b_header + b_filter + b_partition + b_compPrefix + b_itemRef + b_serialNumber;
-        String hex = "";
+        StringBuilder hex = new StringBuilder();
         int offs = 0;
         while (offs < bin.length()) {
-            hex += binaryStringToHex(bin.substring(offs, ((offs += 4) > bin.length()) ? bin.length() : offs));
+            String tmp = bin.substring(offs, ((offs += 4) > bin.length()) ? bin.length() : offs);
+            if(tmp.length() < 4) {
+                tmp = fillRightWithZeros(tmp, 4);
+            }
+            hex.append(binaryStringToHex(tmp));
         }
-        return hex.toUpperCase();
+        return hex.toString().toUpperCase();
     }
 
     private String toBinaryString(String s) {
         byte[] ba;
-        String ret = "";
+        StringBuilder ret = new StringBuilder();
         ba = s.getBytes();
         for (byte b : ba) {
-            ret += fillLeftWithZeros(Integer.toBinaryString((int) b), 7);
+            ret.append(fillLeftWithZeros(Integer.toBinaryString((int) b), 7));
         }
-        return ret;
+        return ret.toString();
     }
 
     public String createSSCCHexEPC(int filter, int partition, String compPrefix, String extensionCode, String serialRef) throws Exception {
@@ -279,12 +283,12 @@ public class EPCTools implements Serializable {
         String b_unallocated = fillLeftWithZeros("0", 24); //24 bit unallocated
         String bin = b_header + b_filter + b_partition + b_compPrefix + b_serialRef + b_unallocated;
 
-        String hex = "";
+        StringBuilder hex = new StringBuilder();
         int offs = 0;
         while (offs < 96) {
-            hex += binaryStringToHex(bin.substring(offs, offs += 4));
+            hex.append(binaryStringToHex(bin.substring(offs, offs += 4)));
         }
-        return hex.toUpperCase();
+        return hex.toString().toUpperCase();
     }
 
     public String createEPCPureIdentityURI(String epcHex) throws Exception {

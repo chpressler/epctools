@@ -8,6 +8,7 @@ import java.util.HashMap;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -86,6 +87,17 @@ public class EPCToolsTest {
 
         epcPureIdUri = epcTools.createEPCPureIdentityURI(hex);
         Assert.assertEquals("urn:epc:id:sgtin:030430.0058045.12345abcABC012345678", epcPureIdUri);
+    }
+    
+    @Test
+    public void testSGTIN198_Alphanumeric() throws Exception{
+    	int rank = 1;
+    	String gtin = "08806420000314";
+    	String serialNumber = "C1500000000309087613";
+    	String epc = epcTools.createSGTIN_198HexEPC(rank, gtin, serialNumber);
+    	String epcUri = epcTools.createEPCPureIdentityURI(epc);
+    	assertEquals("urn:epc:id:sgtin:880642.0000031.C1500000000309087613", epcUri);
+    	assertEquals("363B5C00800007E1B16AC183060C183060CD83960E1BB662CC", epc);
     }
     
     @Test
