@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 *.class
 *.iml
 *.idea
@@ -9,3 +10,7 @@ target/
 /*/target/
 /*/*/target/
 /target/
+=======
+/EPCTools/.idea/
+/EPCTools/target/
+>>>>>>> 443804d54623fc6f73c8265d3a5ce0e036d142d2
