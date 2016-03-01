@@ -81,7 +81,7 @@ public class EPCToolsTest {
         hex = epcTools.createSGTIN_198HexEPC(1, 6, "030430", "0058045", "12345abcABC012345678");
         Assert.assertEquals("36381DB78038AF58B266D1AE1C58E0C286C18B266D1AB66EE0", hex);
 
-        epcPureIdUri = epcTools.createEPCPureIdentityURI(hex);
+        String epcPureIdUri = epcTools.createEPCPureIdentityURI(hex);
         Assert.assertEquals("urn:epc:id:sgtin:030430.0058045.12345abcABC012345678", epcPureIdUri);
 
         hex = epcTools.createSGTIN_198HexEPC(1, 0, "234567890123", "1", "12345");
@@ -95,8 +95,8 @@ public class EPCToolsTest {
     	String serialNumber = "C1500000000309087613";
     	String epc = epcTools.createSGTIN_198HexEPC(rank, gtin, serialNumber);
     	String epcUri = epcTools.createEPCPureIdentityURI(epc);
-    	assertEquals("urn:epc:id:sgtin:880642.0000031.C1500000000309087613", epcUri);
-    	assertEquals("363B5C00800007E1B16AC183060C183060CD83960E1BB662CC", epc);
+        Assert.assertEquals("urn:epc:id:sgtin:880642.0000031.C1500000000309087613", epcUri);
+        Assert.assertEquals("363B5C00800007E1B16AC183060C183060CD83960E1BB662CC", epc);
     }
     
     @Test

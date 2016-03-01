@@ -76,7 +76,6 @@ public class EPCTools implements Serializable {
     }
 
     /*public enum ENCODING {
-
         DOD_64, DOD_96, SGTIN_96, SSCC, GLN_96, GRAI_96, GIAI_96, GID_96, SGTIN_198
     }*/
     public enum ENCODING {
@@ -105,7 +104,7 @@ public class EPCTools implements Serializable {
     private String hexToBinaryString(String hex) {
         StringBuilder sb = new StringBuilder();
         for (byte b : hex.getBytes()) {
-           sb.append(fillLeftWithZeros(Integer.toBinaryString(Integer.parseInt(new String(new byte[]{b}), 16)), 4));
+            sb.append(fillLeftWithZeros(Integer.toBinaryString(Integer.parseInt(new String(new byte[]{b}), 16)), 4));
         }
         return sb.toString();
     }
@@ -198,7 +197,7 @@ public class EPCTools implements Serializable {
         }
         String b_header = fillLeftWithZeros(Integer.toBinaryString(48), 8); //8 bit header
         String b_filter = fillLeftWithZeros(Integer.toBinaryString(filter), 3); //3 bit filter
-        String b_partition = fillLeftWithZeros(Integer.toBinaryString(partition), 3); //3 bit partition 
+        String b_partition = fillLeftWithZeros(Integer.toBinaryString(partition), 3); //3 bit partition
         long compPrefixLength = giaiPartitionTableCompPrefix.get((long) partition);
         if (Long.toBinaryString(Long.parseLong(compPrefix)).length() > compPrefixLength) {
             throw new Exception("comp prefix length for partition: " + partition + " is too big. Max Length: " + compPrefixLength + ".");
@@ -211,12 +210,12 @@ public class EPCTools implements Serializable {
         String b_itemRef = fillLeftWithZeros(Integer.toBinaryString(Integer.parseInt(itemRef)), (int) itemRefLength);
         String b_serialNumber = fillLeftWithZeros(Long.toBinaryString(Long.parseLong(serialNumber)), 38); //38 bit sn
         String bin = b_header + b_filter + b_partition + b_compPrefix + b_itemRef + b_serialNumber;
-        String hex = "";
+        StringBuilder hex = new StringBuilder();
         int offs = 0;
         while (offs < bin.length()) {
-            hex += binaryStringToHex(bin.substring(offs, offs += 4));
+            hex.append(binaryStringToHex(bin.substring(offs, offs += 4)));
         }
-        return hex.toUpperCase();
+        return hex.toString().toUpperCase();
     }
 
     public String createSGTIN_198HexEPC(int filter, int partition, String compPrefix, String itemRef, String serialNumber) throws Exception {
@@ -228,7 +227,7 @@ public class EPCTools implements Serializable {
         }
         String b_header = fillLeftWithZeros(Integer.toBinaryString(54), 8); //8 bit header
         String b_filter = fillLeftWithZeros(Integer.toBinaryString(filter), 3); //3 bit filter
-        String b_partition = fillLeftWithZeros(Integer.toBinaryString(partition), 3); //3 bit partition 
+        String b_partition = fillLeftWithZeros(Integer.toBinaryString(partition), 3); //3 bit partition
         long compPrefixLength = giaiPartitionTableCompPrefix.get((long) partition);
         if (Long.toBinaryString(Long.parseLong(compPrefix)).length() > compPrefixLength) {
             throw new Exception("comp prefix length for partition: " + partition + " is too big. Max Length: " + compPrefixLength + ".");
@@ -242,22 +241,26 @@ public class EPCTools implements Serializable {
         String b_serialNumber = fillRightWithZeros(toBinaryString(serialNumber), 140);//140 bit sn - alphanumeric (140 bit / 20 digits = 7bit - ASCI 128 per digit)
 
         String bin = b_header + b_filter + b_partition + b_compPrefix + b_itemRef + b_serialNumber;
-        String hex = "";
+        StringBuilder hex = new StringBuilder();
         int offs = 0;
         while (offs < bin.length()) {
-            hex += binaryStringToHex(bin.substring(offs, ((offs += 4) > bin.length()) ? bin.length() : offs));
+            String tmp = bin.substring(offs, ((offs += 4) > bin.length()) ? bin.length() : offs);
+            if(tmp.length() < 4) {
+                tmp = fillRightWithZeros(tmp, 4);
+            }
+            hex.append(binaryStringToHex(tmp));
         }
-        return hex.toUpperCase();
+        return hex.toString().toUpperCase();
     }
 
     private String toBinaryString(String s) {
         byte[] ba;
-        String ret = "";
+        StringBuilder ret = new StringBuilder();
         ba = s.getBytes();
         for (byte b : ba) {
-            ret += fillLeftWithZeros(Integer.toBinaryString((int) b), 7);
+            ret.append(fillLeftWithZeros(Integer.toBinaryString((int) b), 7));
         }
-        return ret;
+        return ret.toString();
     }
 
     public String createSSCCHexEPC(int filter, int partition, String compPrefix, String extensionCode, String serialRef) throws Exception {
@@ -266,7 +269,7 @@ public class EPCTools implements Serializable {
         }
         String b_header = fillLeftWithZeros(Integer.toBinaryString(49), 8); //8 bit header
         String b_filter = fillLeftWithZeros(Integer.toBinaryString(filter), 3); //3 bit filter
-        String b_partition = fillLeftWithZeros(Integer.toBinaryString(partition), 3); //3 bit partition 
+        String b_partition = fillLeftWithZeros(Integer.toBinaryString(partition), 3); //3 bit partition
         long compPrefixLength = giaiPartitionTableCompPrefix.get((long) partition);
 
         String b_compPrefix = fillLeftWithZeros(Integer.toBinaryString(Integer.parseInt(compPrefix)), (int) compPrefixLength);
@@ -279,20 +282,38 @@ public class EPCTools implements Serializable {
         String b_unallocated = fillLeftWithZeros("0", 24); //24 bit unallocated
         String bin = b_header + b_filter + b_partition + b_compPrefix + b_serialRef + b_unallocated;
 
-        String hex = "";
+        StringBuilder hex = new StringBuilder();
         int offs = 0;
         while (offs < 96) {
-            hex += binaryStringToHex(bin.substring(offs, offs += 4));
+            hex.append(binaryStringToHex(bin.substring(offs, offs += 4)));
         }
-        return hex.toUpperCase();
+        return hex.toString().toUpperCase();
     }
 
     public String createEPCPureIdentityURI(String epcHex) throws Exception {
         HashMap<TAG_DATA, String> map = parseHexString(epcHex);
-        if (map.get(TAG_DATA.HEADER).equals(ENCODING.SGTIN_96.toString())) {
-            return "urn:epc:id:sgtin:" + getCompanyPrefix(map) + "." + getItemReference(map) + "." + map.get(TAG_DATA.SERIAL_NUMBER);
+        if (map.get(TAG_DATA.HEADER).equals(ENCODING.SGTIN_96.toString()) || map.get(TAG_DATA.HEADER).equals(ENCODING.SGTIN_198.toString())) {
+            String sn = map.get(TAG_DATA.SERIAL_NUMBER);
+            if (sn.matches(".*[a-zA-Z]+.*")) {
+                sn = sn.replaceFirst ("^0*", "");
+            }
+            else {
+                try {
+                    sn = Long.toString(Long.parseLong(sn));
+                } catch (Exception e) {}
+            }
+            return "urn:epc:id:sgtin:" + map.get(TAG_DATA.COMPANY_PREFIX) + "." + map.get(TAG_DATA.ITEM_REFERENCE) + "." + sn;
         } else if (map.get(TAG_DATA.HEADER).equals(ENCODING.SSCC.toString())) {
-            return "urn:epc:id:sscc:" + getCompanyPrefix(map) + "." + map.get(TAG_DATA.SERIAL_REFERENCE);
+            String sn = map.get(TAG_DATA.SERIAL_REFERENCE);
+            if (sn.matches(".*[a-zA-Z]+.*")) {
+                sn = sn.replaceFirst ("^0*", "");
+            }
+            else {
+                try {
+                    sn = Long.toString(Long.parseLong(sn));
+                } catch (Exception e) {}
+            }
+            return "urn:epc:id:sscc:" + map.get(TAG_DATA.COMPANY_PREFIX) + "." + sn;
         } else {
             throw new Exception("unsupported Header: " + map.get(TAG_DATA.HEADER));
         }
@@ -301,9 +322,38 @@ public class EPCTools implements Serializable {
     public String createEPCTagIdURI(String epcHex) throws Exception {
         HashMap<TAG_DATA, String> map = parseHexString(epcHex);
         if (map.get(TAG_DATA.HEADER).equals(ENCODING.SGTIN_96.toString())) {
-            return "urn:epc:tag:sgtin-96:" + map.get(TAG_DATA.FILTER) + "." + map.get(TAG_DATA.COMPANY_PREFIX) + "." + map.get(TAG_DATA.ITEM_REFERENCE) + "." + map.get(TAG_DATA.SERIAL_NUMBER);
+            String sn = map.get(TAG_DATA.SERIAL_NUMBER);
+            if (sn.matches(".*[a-zA-Z]+.*")) {
+                sn = sn.replaceFirst ("^0*", "");
+            }
+            else {
+                try {
+                    sn = Long.toString(Long.parseLong(sn));
+                } catch (Exception e) {}
+            }
+            return "urn:epc:tag:sgtin-96:" + map.get(TAG_DATA.FILTER) + "." + map.get(TAG_DATA.COMPANY_PREFIX) + "." + map.get(TAG_DATA.ITEM_REFERENCE) + "." +sn;
+        } if (map.get(TAG_DATA.HEADER).equals(ENCODING.SGTIN_198.toString())) {
+            String sn = map.get(TAG_DATA.SERIAL_NUMBER);
+            if (sn.matches(".*[a-zA-Z]+.*")) {
+                sn = sn.replaceFirst ("^0*", "");
+            }
+            else {
+                try {
+                    sn = Long.toString(Long.parseLong(sn));
+                } catch (Exception e) {}
+            }
+            return "urn:epc:tag:sgtin-198:" + map.get(TAG_DATA.FILTER) + "." + map.get(TAG_DATA.COMPANY_PREFIX) + "." + map.get(TAG_DATA.ITEM_REFERENCE) + "." +sn;
         } else if (map.get(TAG_DATA.HEADER).equals(ENCODING.SSCC.toString())) {
-            return "urn:epc:tag:sscc-96:" + map.get(TAG_DATA.FILTER) + "." + map.get(TAG_DATA.COMPANY_PREFIX) + "." + map.get(TAG_DATA.SERIAL_REFERENCE);
+            String sn = map.get(TAG_DATA.SERIAL_REFERENCE);
+            if (sn.matches(".*[a-zA-Z]+.*")) {
+                sn = sn.replaceFirst ("^0*", "");
+            }
+            else {
+                try {
+                    sn = Long.toString(Long.parseLong(sn));
+                } catch (Exception e) {}
+            }
+            return "urn:epc:tag:sscc-96:" + map.get(TAG_DATA.FILTER) + "." + map.get(TAG_DATA.COMPANY_PREFIX) + "." + sn;
         } else {
             throw new Exception("unsupported Header: " + map.get(TAG_DATA.HEADER));
         }
@@ -416,16 +466,16 @@ public class EPCTools implements Serializable {
 
     private String binStringTo7bitASCII(String s) {
         int offset = 0, length;
-        StringBuilder sb = new StringBuilder();
+        String ret = "";
         while (offset < s.length()) {
             length = (offset + 7 > s.length()) ? (s.length() - offset) : 7;
             long l = binStringToLong(s.substring(offset, offset + length));
             if (l > 9) { //skip control chars
-                sb.append((char) binStringToLong(s.substring(offset, offset + length)));
+                ret += (char) binStringToLong(s.substring(offset, offset + length));
             }
             offset += 7;
         }
-        return sb.toString();
+        return ret;
     }
 
     private long binStringToLong(String s) {
