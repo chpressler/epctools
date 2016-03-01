@@ -103,11 +103,11 @@ public class EPCTools implements Serializable {
     }
 
     private String hexToBinaryString(String hex) {
-        String bin = "";
+        StringBuilder sb = new StringBuilder();
         for (byte b : hex.getBytes()) {
-            bin += fillLeftWithZeros(Integer.toBinaryString(Integer.parseInt(new String(new byte[]{b}), 16)), 4);
+           sb.append(fillLeftWithZeros(Integer.toBinaryString(Integer.parseInt(new String(new byte[]{b}), 16)), 4));
         }
-        return bin;
+        return sb.toString();
     }
 
     private String binaryStringToHex(String bin) {
@@ -200,10 +200,10 @@ public class EPCTools implements Serializable {
         String b_filter = fillLeftWithZeros(Integer.toBinaryString(filter), 3); //3 bit filter
         String b_partition = fillLeftWithZeros(Integer.toBinaryString(partition), 3); //3 bit partition
         long compPrefixLength = giaiPartitionTableCompPrefix.get((long) partition);
-        if (Integer.toBinaryString(Integer.parseInt(compPrefix)).length() > compPrefixLength) {
+        if (Long.toBinaryString(Long.parseLong(compPrefix)).length() > compPrefixLength) {
             throw new Exception("comp prefix length for partition: " + partition + " is too big. Max Length: " + compPrefixLength + ".");
         }
-        String b_compPrefix = fillLeftWithZeros(Integer.toBinaryString(Integer.parseInt(compPrefix)), (int) compPrefixLength);
+        String b_compPrefix = fillLeftWithZeros(Long.toBinaryString(Long.parseLong(compPrefix)), (int) compPrefixLength);
         long itemRefLength = giaiPartitionTableIndividualAssetRef.get((long) partition) - 38;
         if (Integer.toBinaryString(Integer.parseInt(itemRef)).length() > itemRefLength) {
             throw new Exception("item reference length for partition: " + partition + " is too big. Max Length: " + itemRefLength + ".");
@@ -230,10 +230,10 @@ public class EPCTools implements Serializable {
         String b_filter = fillLeftWithZeros(Integer.toBinaryString(filter), 3); //3 bit filter
         String b_partition = fillLeftWithZeros(Integer.toBinaryString(partition), 3); //3 bit partition
         long compPrefixLength = giaiPartitionTableCompPrefix.get((long) partition);
-        if (Integer.toBinaryString(Integer.parseInt(compPrefix)).length() > compPrefixLength) {
+        if (Long.toBinaryString(Long.parseLong(compPrefix)).length() > compPrefixLength) {
             throw new Exception("comp prefix length for partition: " + partition + " is too big. Max Length: " + compPrefixLength + ".");
         }
-        String b_compPrefix = fillLeftWithZeros(Integer.toBinaryString(Integer.parseInt(compPrefix)), (int) compPrefixLength);
+        String b_compPrefix = fillLeftWithZeros(Long.toBinaryString(Long.parseLong(compPrefix)), (int) compPrefixLength);
         long itemRefLength = giaiPartitionTableIndividualAssetRef.get((long) partition) - 38;
         if (Integer.toBinaryString(Integer.parseInt(itemRef)).length() > itemRefLength) {
             throw new Exception("item reference length for partition: " + partition + " is too big. Max Length: " + itemRefLength + ".");

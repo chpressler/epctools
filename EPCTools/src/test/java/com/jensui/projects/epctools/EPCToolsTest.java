@@ -72,6 +72,9 @@ public class EPCToolsTest {
         
         hex = epcTools.createSGTIN_96HexEPC(3, 5, "0037000", "65735", "999");
         Assert.assertEquals("30740242204031C0000003E7", hex);
+
+        hex = epcTools.createSGTIN_96HexEPC(1, 0, "234567890123", "1", "12345");
+        Assert.assertEquals("3020DA7557D32C4000003039", hex);
     }
     
     @Test
@@ -87,6 +90,9 @@ public class EPCToolsTest {
 
         epcPureIdUri = epcTools.createEPCPureIdentityURI(hex);
         Assert.assertEquals("urn:epc:id:sgtin:030430.0058045.12345abcABC012345678", epcPureIdUri);
+
+        hex = epcTools.createSGTIN_198HexEPC(1, 0, "234567890123", "1", "12345");
+        Assert.assertEquals("3620DA7557D32C58B266D1A800000000000000000000000000", hex);
     }
     
     @Test
@@ -188,6 +194,9 @@ public class EPCToolsTest {
         Assert.assertEquals("0037000", epcTools.getCompanyPrefix("30740242204031C0000003E7"));
         Assert.assertEquals("0718908", epcTools.getCompanyPrefix("31542BE0F0218A7975000000"));
         Assert.assertEquals("030430", epcTools.getCompanyPrefix("36381DB78038AF58B266D1AE1C58E0C286C18B266D1AB66EE0"));
+
+        Assert.assertEquals("234567890123", epcTools.getCompanyPrefix("3020DA7557D32C4000003039"));
+        Assert.assertEquals("234567890123", epcTools.getCompanyPrefix("3620DA7557D32C58B266D1A80000000000000000000000000000"));
     }
 
     /**
