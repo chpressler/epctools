@@ -272,7 +272,7 @@ public class EPCTools implements Serializable {
         String b_partition = fillLeftWithZeros(Integer.toBinaryString(partition), 3); //3 bit partition
         long compPrefixLength = giaiPartitionTableCompPrefix.get((long) partition);
 
-        String b_compPrefix = fillLeftWithZeros(Integer.toBinaryString(Integer.parseInt(compPrefix)), (int) compPrefixLength);
+        String b_compPrefix = fillLeftWithZeros(Long.toBinaryString(Long.parseLong(compPrefix)), (int) compPrefixLength);
         long serialRefBitLength = giaiPartitionTableSerialReference.get((long) partition);
         int serialRefDigits = partition + 5;
 
